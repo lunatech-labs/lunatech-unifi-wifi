@@ -34,7 +34,7 @@ class UnifiController @Inject()(val configuration: Configuration,
   }
 
   def login = Action { implicit request =>
-    if (environment.mode == Mode.Dev) {
+    if (environment.mode == Mode.Prod) {
       val clientId: String = configuration.get[String]("google.clientId")
       val state: String = auth.generateState
       Ok(views.html.login(clientId, state)(request.flash))
