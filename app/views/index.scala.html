@@ -1,0 +1,24 @@
+@()(implicit flash: Flash)
+
+    @main("Lunatech WiFi") {
+        <div class="row">
+            <div class="col-sm">
+                <h1>Lunatech WiFi</h1>
+                <p>Manage your Lunatech Enterprise Wifi account.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm">
+                <div class="btn-toolbar">
+                    <form method="POST" action="@routes.UnifiController.wifi().url">
+                        <button class="btn btn-success" type="submit">Generate password</button>
+                    </form>
+                    <form method="POST" action="@routes.UnifiController.reset().url">
+                        <button class="btn btn-danger" type="submit">Reset password</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    }

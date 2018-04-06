@@ -1,0 +1,25 @@
+@(username: String, password: String)(implicit flash: Flash)
+
+@main("Lunatech WiFi") {
+    <div class="row">
+        <div class="col-sm">
+            <h1>New WiFi account</h1>
+            <p>Select "LunatechEnterprise" network and fill the credentials:</p>
+        </div>
+    </div>
+
+    <form>
+        <div class="form-group row">
+            <label for="staticUsername" class="col-sm-2 col-form-label">Username</label>
+            <div class="col-sm">
+                <input type="text" readonly class="form-control-plaintext" id="staticUsername" value="@username">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="staticPassword" class="col-sm-2 col-form-label">Password</label>
+            <div class="col-sm">
+                <input type="text" readonly class="form-control-plaintext" id="staticPassword" value="@password">
+            </div>
+        </div>
+    </form>
+}

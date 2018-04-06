@@ -1,0 +1,29 @@
+@(clientId: String, state: String)(implicit flash: Flash)
+
+
+    @main("Login") {
+        <div class="container well">
+            <form>
+                <h2>Lunatech WiFi</h2>
+                <p class="description">
+                    You must be a Lunatech employee with a valid google account to use this software.
+                </p>
+
+                <div id="signinButton">
+                    <span class="g-signin"
+                    data-scope="email"
+                    data-clientid="@clientId"
+                    data-state="@state"
+                    data-redirecturi="postmessage"
+                    data-accesstype="offline"
+                    data-cookiepolicy="single_host_origin"
+                    data-approvalprompt="force"
+                    data-callback="signInCallback">
+                    </span>
+                </div>
+                <div id="result"></div>
+            </form>
+        </div>
+        <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
+        <script src="@routes.Assets.versioned("javascripts/googleCallback.js")"></script>
+    }
