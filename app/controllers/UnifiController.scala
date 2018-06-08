@@ -45,7 +45,7 @@ class UnifiController @Inject()(val configuration: Configuration,
 
   def authenticate(code: String, idToken: String, accessToken: String) = Action.async {
     auth.authenticateToken(code, idToken, accessToken).map {
-      case Left(parameters) => Redirect(routes.UnifiController.index()).withSession(parameters.toArray: _*)
+      case Left(authenticationResult) => Redirect(routes.UnifiController.index()).withSession("email" -> authenticationResult.email)
       case Right(message) => Redirect(routes.UnifiController.login()).withNewSession.flashing("error" -> message.toString())
     }
   }

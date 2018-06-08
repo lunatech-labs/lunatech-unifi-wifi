@@ -12,5 +12,5 @@ resolvers += "Lunatech Artifactory" at "http://artifactory.lunatech.com/artifact
 libraryDependencies ++= Seq(
   guice, ws,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
-  "com.lunatech" %% "play-googleopenconnect" % "2.2"
+  "com.lunatech" %% "play-googleopenconnect" % "2.3"
 )
