@@ -2,10 +2,10 @@ package services
 
 import com.google.inject.Inject
 import models.UnifiSite
-import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{Format, Json}
-import play.api.libs.ws.{WSClient, WSCookie, WSRequest}
+import play.api.libs.ws.{WSClient, WSCookie, WSRequest, WSResponse}
+import play.api.{Configuration, Logger}
 import services.UnifiService.{Error, RadiusUser, UnifiResponse, UnifiUser}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,9 +26,19 @@ class UnifiService @Inject()(configuration: Configuration,
       request.post(Json.toJson(RadiusUser(email, password))).map { response =>
         response.status match {
           case Status.OK => Right(password)
-          case _ => Left(Error(response.body))
+          case _ => Left(handleError(response, site))
         }
       }
+    }
+  }
+
+  private def handleError(response: WSResponse, unifiSite: UnifiSite): Error = {
+    response.json.as[UnifiResponse].meta.msg match {
+      case Some("api.err.DuplicateAccountName") =>
+        Error(s"Error: your account already exists in ${unifiSite.name}, you can try resetting your password.")
+      case _ =>
+        Logger.error(response.body)
+        Error("Error: an unexpected error occurred, please try again!")
     }
   }
 
@@ -50,7 +60,7 @@ class UnifiService @Inject()(configuration: Configuration,
         request.put(Json.toJson(radiusUser)).map { response =>
           response.status match {
             case Status.OK => Right(radiusUser.x_password)
-            case _ => Left(Error(response.body))
+            case _ => Left(handleError(response, site))
           }
         }
       }
@@ -72,7 +82,7 @@ class UnifiService @Inject()(configuration: Configuration,
         request.delete.map { response =>
           response.status match {
             case Status.OK => Right(s"${radiusUser.name} deleted")
-            case _ => Left(Error(response.body))
+            case _ => Left(handleError(response, site))
           }
         }
       }
@@ -89,7 +99,7 @@ class UnifiService @Inject()(configuration: Configuration,
               process(ws.url(url).withCookies(session).addHttpHeaders("X-Csrf-Token" -> token.value))
             case _ => Future.successful(Left(Error("Missing cookies in auth response")))
           }
-          case _ => Future.successful(Left(Error(response.body)))
+          case _ => Future.successful(Left(handleError(response, site)))
         }
       }
   }
@@ -110,7 +120,7 @@ class UnifiService @Inject()(configuration: Configuration,
           case Status.OK =>
             val error = Error("Account not found, please generate a new account")
             response.json.as[UnifiResponse].data.find(_.name == email).toRight(error)
-          case _ => Left(Error(response.body))
+          case _ => Left(handleError(response, site))
         }
       }
     }

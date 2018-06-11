@@ -15,15 +15,19 @@
     </head>
     <body>
         <div class="container">
-            @flash.get("error").map { error =>
+            @flash.get("error").map { errors =>
                 <div class="alert alert-danger" role="alert">
-                    @error
+                    <ul>
+                        @errors.split("\n").map { error =>
+                          <li>@error</li>
+                        }
+                    </ul>
                 </div>
             }
 
-            @flash.get("success").map { error =>
+            @flash.get("success").map { success =>
                 <div class="alert alert-success" role="alert">
-                    @error
+                    <p>@success.replace("\n", "</br>")</p>
                 </div>
             }
 
