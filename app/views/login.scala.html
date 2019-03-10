@@ -1,29 +1,41 @@
 @(clientId: String, state: String)(implicit flash: Flash)
 
+@scripts = {
+    <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
+    <script>
+            function start() {
+                gapi.load('auth2', function () {
+                    auth2 = gapi.auth2.init({
+                        client_id: '@clientId'
+                    });
+                });
+            }
+    </script>
+}
 
-    @main("Login") {
+    @main("Login", scripts) {
         <div class="container well">
-            <form>
+            <div>
                 <h2>Lunatech WiFi</h2>
                 <p class="description">
                     You must be a Lunatech employee with a valid google account to use this software.
                 </p>
 
-                <div id="signinButton">
-                    <span class="g-signin"
-                    data-scope="email"
-                    data-clientid="@clientId"
-                    data-state="@state"
-                    data-redirecturi="postmessage"
-                    data-accesstype="offline"
-                    data-cookiepolicy="single_host_origin"
-                    data-approvalprompt="force"
-                    data-callback="signInCallback">
-                    </span>
-                </div>
+                <button id="signinButton">Sign in with Google</button>
+                <script>
+                        $('#signinButton').click(function () {
+                            auth2.grantOfflineAccess().then(signInCallback);
+                        });
+
+                        function signInCallback(authResult) {
+                            if (authResult['code']) {
+                                $('#signinButton').hide();
+                                $('.description').text("Processing login...");
+                                window.location = "/authenticate?code=" + authResult['code'];
+                            }
+                        }
+                </script>
                 <div id="result"></div>
-            </form>
+            </div>
         </div>
-        <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
-        <script src="@routes.Assets.versioned("javascripts/googleCallback.js")"></script>
     }

@@ -9,7 +9,7 @@ POST        /wifi                controllers.UnifiController.wifi()
 POST        /reset               controllers.UnifiController.reset()
 
 GET         /login               controllers.UnifiController.login()
-GET         /authenticate        controllers.UnifiController.authenticate(code: String, id_token: String, access_token: String)
+GET         /authenticate        controllers.UnifiController.authenticate(code: String)
 GET         /logout              controllers.UnifiController.logout()
 
 # Map static resources from the /public folder to the /assets URL path

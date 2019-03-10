@@ -1,7 +1,7 @@
 name := """lunatech-wifi"""
 organization := "com.lunatech"
 
-version := "1.0.1"
+version := "1.0.2"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
@@ -11,5 +11,5 @@ resolvers += "Lunatech Artifactory" at "http://artifactory.lunatech.com/artifact
 
 libraryDependencies ++= Seq(
   guice, ws,
-  "com.lunatech" %% "play-googleopenconnect" % "2.3.1"
+  "com.lunatech" %% "play-googleopenconnect" % "2.4.0"
 )
