@@ -11,5 +11,7 @@ resolvers += "Lunatech Artifactory" at "http://artifactory.lunatech.com/artifact
 
 libraryDependencies ++= Seq(
   guice, ws,
+  "com.enragedginger" %% "akka-quartz-scheduler" % "1.8.0-akka-2.5.x",
+  "org.typelevel" %% "cats-core" % "1.6.0",
   "com.lunatech" %% "play-googleopenconnect" % "2.4.0"
 )

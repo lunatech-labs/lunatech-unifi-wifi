@@ -5,14 +5,14 @@ import models.UnifiSite
 import play.api.http.Status
 import play.api.libs.json.{Format, Json}
 import play.api.libs.ws.{WSClient, WSCookie, WSRequest, WSResponse}
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Logging}
 import services.UnifiService.{Error, RadiusUser, UnifiResponse, UnifiUser}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 class UnifiService @Inject()(configuration: Configuration,
-                             ws: WSClient)(implicit ec: ExecutionContext) {
+                             ws: WSClient)(implicit ec: ExecutionContext) extends Logging {
   private val baseUrl: String = configuration.get[String]("unifi.url")
   private val sites = configuration.get[Seq[UnifiSite]]("unifi.sites")
 
@@ -37,7 +37,7 @@ class UnifiService @Inject()(configuration: Configuration,
       case Some("api.err.DuplicateAccountName") =>
         Error(s"Error: your account already exists in ${unifiSite.name}, you can try resetting your password.")
       case _ =>
-        Logger.error(response.body)
+        logger.error(response.body)
         Error("Error: an unexpected error occurred, please try again!")
     }
   }
@@ -81,7 +81,9 @@ class UnifiService @Inject()(configuration: Configuration,
       withAuth(s"$baseUrl/api/s/${site.id}/rest/account/$userId", site) { request =>
         request.delete.map { response =>
           response.status match {
-            case Status.OK => Right(s"${radiusUser.name} deleted")
+            case Status.OK =>
+              logger.debug(s"Deleted ${radiusUser.name} at ${site.name}")
+              Right(s"${radiusUser.name} deleted")
             case _ => Left(handleError(response, site))
           }
         }
@@ -122,6 +124,26 @@ class UnifiService @Inject()(configuration: Configuration,
             response.json.as[UnifiResponse].data.find(_.name == email).toRight(error)
           case _ => Left(handleError(response, site))
         }
+      }
+    }
+  }
+
+  private def getAccounts(site: UnifiSite): Future[Either[Error, Seq[RadiusUser]]] = {
+    withAuth(s"$baseUrl/api/s/${site.id}/rest/account", site) { request =>
+      request.get.map { response =>
+        response.status match {
+          case Status.OK => Right(response.json.as[UnifiResponse].data)
+          case _ => Left(handleError(response, site))
+        }
+      }
+    }
+  }
+
+  def getRadiusAccounts: Future[Either[String, Seq[RadiusUser]]] = {
+    Future.sequence(sites.map(getAccounts)).map { results =>
+      results.flatMap(_.swap.toOption) match {
+        case Nil => Right(results.flatMap(_.toOption).flatten)
+        case errors => Left(errors.map(_.message).mkString("\n"))
       }
     }
   }
