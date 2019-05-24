@@ -27,6 +27,7 @@
     <logger name="actors.Cleaner" level="DEBUG"/>
     <logger name="play" level="INFO"/>
     <logger name="application" level="DEBUG"/>
+    <logger name="services" level="DEBUG"/>
 
     <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
     <logger name="com.avaje.ebean.models.PropertyMapLoader" level="OFF"/>
