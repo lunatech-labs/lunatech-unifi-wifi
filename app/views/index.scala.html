@@ -1,4 +1,6 @@
-@()(implicit flash: Flash)
+@import helper._
+
+@()(implicit flash: Flash, request: RequestHeader)
 
     @main("Lunatech WiFi") {
         <div class="row">
@@ -12,9 +14,11 @@
             <div class="col-sm">
                 <div class="btn-toolbar">
                     <form method="POST" action="@routes.UnifiController.wifi().url">
+                        @CSRF.formField
                         <button class="btn btn-success" type="submit">Generate password</button>
                     </form>
                     <form method="POST" action="@routes.UnifiController.reset().url">
+                        @CSRF.formField
                         <button class="btn btn-danger" type="submit">Reset password</button>
                     </form>
                 </div>
