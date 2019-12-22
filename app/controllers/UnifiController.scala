@@ -26,13 +26,6 @@ class UnifiController @Inject()(val configuration: Configuration,
     }
   }
 
-  def reset = userAction.async { implicit request =>
-    unifiService.resetRadiusAccounts(request.email).map {
-      case Right(password) => Ok(views.html.wifi(request.email, password))
-      case Left(errors) => Redirect(routes.UnifiController.index()).flashing("error" -> errors)
-    }
-  }
-
   def login = Action { implicit request =>
     if (environment.mode == Mode.Prod) {
       val clientId: String = configuration.get[String]("google.clientId")

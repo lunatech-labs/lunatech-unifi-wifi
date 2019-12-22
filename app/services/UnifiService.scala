@@ -23,34 +23,30 @@ class UnifiService @Inject()(configuration: Configuration,
 
   private def createRadiusAccount(email: String, password: String, site: UnifiSite): Future[Either[Error, String]] = {
     withAuth(s"$baseUrl/api/s/${site.id}/rest/account", site) { request =>
-      request.post(Json.toJson(RadiusUser(email, password))).map { response =>
+      request.post(Json.toJson(RadiusUser(email, password))).flatMap { response =>
         response.status match {
-          case Status.OK => Right(password)
-          case _ => Left(handleError(response, site))
+          case Status.OK => Future.successful(Right(password))
+          case _ =>
+            response.json.as[UnifiResponse].meta.msg match {
+              case Some("api.err.DuplicateAccountName") => resetRadiusAccount(email, password, site)
+              case _ => Future.successful(Left(handleError(response, site)))
+            }
         }
       }
     }
   }
 
   private def handleError(response: WSResponse, unifiSite: UnifiSite): Error = {
-    response.json.as[UnifiResponse].meta.msg match {
-      case Some("api.err.DuplicateAccountName") =>
-        Error(s"Error: your account already exists in ${unifiSite.name}, you can try resetting your password.")
-      case _ =>
-        logger.error(response.body)
-        Error("Error: an unexpected error occurred, please try again!")
-    }
+    logger.error(response.body)
+    Error("Error: an unexpected error occurred, please try again!")
   }
 
   private def generatePassword: String = Random.alphanumeric.take(32).mkString
 
-  def resetRadiusAccounts(email: String): Future[Either[String, String]] = {
-    val newPassword = generatePassword
-    forEachSite(newPassword) { site =>
-      findAccount(email, site).flatMap {
-        case Right(account) => updateRadiusAccount(account.copy(x_password = newPassword), site)
-        case Left(error) => Future.successful(Left(error))
-      }
+  private def resetRadiusAccount(email: String, newPassword: String, site: UnifiSite): Future[Either[Error, String]] = {
+    findAccount(email, site).flatMap {
+      case Right(account) => updateRadiusAccount(account.copy(x_password = newPassword), site)
+      case Left(error) => Future.successful(Left(error))
     }
   }
 

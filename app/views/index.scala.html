@@ -15,14 +15,9 @@
                 <div class="btn-toolbar">
                     <form method="POST" action="@routes.UnifiController.wifi().url">
                         @CSRF.formField
-                        <button class="btn btn-success" type="submit">Generate password</button>
-                    </form>
-                    <form method="POST" action="@routes.UnifiController.reset().url">
-                        @CSRF.formField
-                        <button class="btn btn-danger" type="submit">Reset password</button>
+                        <button class="btn btn-success" type="submit">Generate new password</button>
                     </form>
                 </div>
-
             </div>
         </div>
     }
