@@ -1,12 +1,19 @@
 @(countsPerDevice: Map[String, Map[String, Int]], networks: Set[String], site: UnifiSite)(implicit flash: Flash)
 
+@level(sum: Int) = @{
+    if(sum > 10) "table-danger"
+    else if(sum > 5) "table-warning"
+    else "table-default"
+}
+
 @main("Lunatech WiFi") {
     <h1>@site.name</h1>
     <h3>Connected WiFi devices</h3>
-    <table class="table table-striped">
+    <table class="table table-hover">
         <thead>
             <tr>
                 <th>Device</th>
+                <th>Total</th>
                 @for(network <- networks) {
                     <th>@network</th>
                 }
@@ -14,8 +21,9 @@
         </thead>
         <tbody>
             @for(device <- countsPerDevice) {
-                <tr>
+                <tr class="@level(device._2.values.sum)">
                     <td>@device._1</td>
+                    <td>@device._2.values.sum</td>
                     @for(network <- networks) {
                         <td class="@network">@device._2.getOrElse(network, 0)</td>
                     }
