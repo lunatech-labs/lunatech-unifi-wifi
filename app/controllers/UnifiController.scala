@@ -7,8 +7,8 @@ import play.api.{Configuration, Environment, Mode}
 import services.UnifiService
 import services.UnifiService.Device
 
-import scala.collection.immutable.TreeMap
-import scala.concurrent.ExecutionContext
+import scala.collection.immutable.{TreeMap, TreeSet}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class UnifiController @Inject()(val configuration: Configuration,
@@ -29,9 +29,18 @@ class UnifiController @Inject()(val configuration: Configuration,
   }
 
   def devices(office: String) = userAction.async { implicit request =>
-    unifiService.getDevices(office).map {
-      case Right(devices) => Ok(views.html.devices(countDevicesPerNetwork(devices)))
-      case Left(errors) => BadRequest(errors)
+    unifiService.getSite(office).map { site =>
+        unifiService.getDevices(site.name).map {
+          case Right(devices) =>
+            val countsPerDevice = countDevicesPerNetwork(devices)
+            val networks = countsPerDevice.flatMap {
+              case (_, counts) => counts.keys
+            }.to(TreeSet)
+            Ok(views.html.devices(countsPerDevice, networks, site))
+          case Left(errors) => BadRequest(errors)
+        }
+    }.getOrElse {
+      Future.successful(NotFound("Office not found"))
     }
   }
 

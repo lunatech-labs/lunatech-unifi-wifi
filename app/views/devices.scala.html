@@ -1,26 +1,24 @@
-@import services.UnifiService.Device
-
-@(countsPerDevice: Map[String, Map[String, Int]])(implicit flash: Flash)
+@(countsPerDevice: Map[String, Map[String, Int]], networks: Set[String], site: UnifiSite)(implicit flash: Flash)
 
 @main("Lunatech WiFi") {
+    <h1>@site.name</h1>
+    <h3>Connected WiFi devices</h3>
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>Device</th>
-                <th>LunatechEnterprise</th>
-                <th>LunatechGuest</th>
-                <th>LunatechDevices</th>
-                <th>LunatechVOIP</th>
+                @for(network <- networks) {
+                    <th>@network</th>
+                }
             </tr>
         </thead>
         <tbody>
             @for(device <- countsPerDevice) {
                 <tr>
                     <td>@device._1</td>
-                    <td>@device._2.getOrElse("LunatechEnterprise", 0)</td>
-                    <td>@device._2.getOrElse("LunatechGuest", 0)</td>
-                    <td>@device._2.getOrElse("LunatechDevices", 0)</td>
-                    <td>@device._2.getOrElse("LunatechVOIP", 0)</td>
+                    @for(network <- networks) {
+                        <td class="@network">@device._2.getOrElse(network, 0)</td>
+                    }
                 </tr>
             }
         </tbody>

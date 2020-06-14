@@ -155,7 +155,7 @@ class UnifiService @Inject()(configuration: Configuration,
     }
   }
 
-  private def getSite(office: String): Option[UnifiSite] = {
+  def getSite(office: String): Option[UnifiSite] = {
     sites.find(s => s.name.toLowerCase.contains(office.toLowerCase))
   }
 
