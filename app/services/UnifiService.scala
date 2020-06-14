@@ -6,7 +6,7 @@ import play.api.http.Status
 import play.api.libs.json.{Format, Json}
 import play.api.libs.ws.{WSClient, WSCookie, WSRequest, WSResponse}
 import play.api.{Configuration, Logging}
-import services.UnifiService.{Error, RadiusUser, UnifiResponse, UnifiUser}
+import services.UnifiService.{Device, Error, RadiusUser, UnifiResponse, UnifiUser}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -27,7 +27,7 @@ class UnifiService @Inject()(configuration: Configuration,
         response.status match {
           case Status.OK => Future.successful(Right(password))
           case _ =>
-            response.json.as[UnifiResponse].meta.msg match {
+            response.json.as[UnifiResponse[RadiusUser]].meta.msg match {
               case Some("api.err.DuplicateAccountName") => resetRadiusAccount(email, password, site)
               case _ => Future.successful(Left(handleError(response, site)))
             }
@@ -117,7 +117,7 @@ class UnifiService @Inject()(configuration: Configuration,
         response.status match {
           case Status.OK =>
             val error = Error("Account not found, please generate a new account")
-            response.json.as[UnifiResponse].data.find(_.name == email).toRight(error)
+            response.json.as[UnifiResponse[RadiusUser]].data.find(_.name == email).toRight(error)
           case _ => Left(handleError(response, site))
         }
       }
@@ -128,7 +128,7 @@ class UnifiService @Inject()(configuration: Configuration,
     withAuth(s"$baseUrl/api/s/${site.id}/rest/account", site) { request =>
       request.get.map { response =>
         response.status match {
-          case Status.OK => Right(response.json.as[UnifiResponse].data)
+          case Status.OK => Right(response.json.as[UnifiResponse[RadiusUser]].data)
           case _ => Left(handleError(response, site))
         }
       }
@@ -140,6 +140,32 @@ class UnifiService @Inject()(configuration: Configuration,
       results.flatMap(_.swap.toOption) match {
         case Nil => Right(results.flatMap(_.toOption).flatten)
         case errors => Left(errors.map(_.message).mkString("\n"))
+      }
+    }
+  }
+
+  def getDevices(office: String): Future[Either[String, Seq[Device]]] = {
+    getSite(office).map(getDevices).map { result =>
+      result.map {
+        case Right(devices) => Right(devices)
+        case Left(error) => Left(error.message)
+      }
+    }.getOrElse {
+      Future.successful(Left("Office not found"))
+    }
+  }
+
+  private def getSite(office: String): Option[UnifiSite] = {
+    sites.find(s => s.name.toLowerCase.contains(office.toLowerCase))
+  }
+
+  private def getDevices(site: UnifiSite): Future[Either[Error, Seq[Device]]] = {
+    withAuth(s"$baseUrl/api/s/${site.id}/stat/device", site) { request =>
+      request.get().map { response =>
+        response.status match {
+          case Status.OK => Right(response.json.as[UnifiResponse[Device]].data.filter(_.`type` == "uap"))
+          case _ => Left(handleError(response, site))
+        }
       }
     }
   }
@@ -155,12 +181,19 @@ object UnifiService {
 
   case class Error(message: String)
 
-  case class UnifiResponse(data: Seq[RadiusUser], meta: Meta)
+  case class UnifiResponse[T](data: Seq[T], meta: Meta)
 
   case class Meta(msg: Option[String], rc: String)
 
+  case class Device(name: String, num_sta: Int, `type`: String, vap_table: Option[Seq[VAP]])
+
+  case class VAP(essid: String, num_sta: Int)
+
   implicit private val unifiUserFormat: Format[UnifiUser] = Json.format[UnifiUser]
   implicit private val radiusUserFormat: Format[RadiusUser] = Json.format[RadiusUser]
+  implicit private val vapFormat: Format[VAP] = Json.format[VAP]
+  implicit private val deviceFormat: Format[Device] = Json.format[Device]
   implicit private val metaFormat: Format[Meta] = Json.format[Meta]
-  implicit private val unifiResponseFormat: Format[UnifiResponse] = Json.format[UnifiResponse]
+  implicit private val unifiResponseRadiusUserFormat: Format[UnifiResponse[RadiusUser]] = Json.format[UnifiResponse[RadiusUser]]
+  implicit private val unifiResponseDeviceFormat: Format[UnifiResponse[Device]] = Json.format[UnifiResponse[Device]]
 }

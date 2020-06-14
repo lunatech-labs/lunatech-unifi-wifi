@@ -5,6 +5,7 @@ import javax.inject._
 import play.api.mvc.{BaseController, ControllerComponents}
 import play.api.{Configuration, Environment, Mode}
 import services.UnifiService
+import services.UnifiService.Device
 
 import scala.concurrent.ExecutionContext
 
@@ -24,6 +25,23 @@ class UnifiController @Inject()(val configuration: Configuration,
       case Right(password) => Ok(views.html.wifi(request.email, password))
       case Left(errors) => Redirect(routes.UnifiController.index()).flashing("error" -> errors)
     }
+  }
+
+  def devices(office: String) = userAction.async { implicit request =>
+    unifiService.getDevices(office).map {
+      case Right(devices) => Ok(views.html.devices(countDevicesPerNetwork(devices)))
+      case Left(errors) => BadRequest(errors)
+    }
+  }
+
+  private def countDevicesPerNetwork(devices: Seq[Device]): Map[String, Map[String, Int]] = {
+    devices.map { device =>
+      val networks = device.vap_table.getOrElse(Nil).groupBy(_.essid)
+      val counts = networks.map {
+        case (name, nets) => (name, nets.map(_.num_sta).sum)
+      }
+      (device.name, counts)
+    }.toMap
   }
 
   def login = Action { implicit request =>
