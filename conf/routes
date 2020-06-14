@@ -8,8 +8,8 @@ GET         /                    controllers.UnifiController.index()
 POST        /wifi                controllers.UnifiController.wifi()
 
 GET         /devices/:office     controllers.UnifiController.devices(office: String)
-GET         /login               controllers.UnifiController.login()
-GET         /authenticate        controllers.UnifiController.authenticate(code: String)
+GET         /login               controllers.UnifiController.login(path: String)
+GET         /authenticate        controllers.UnifiController.authenticate(code: String, path: String)
 GET         /logout              controllers.UnifiController.logout()
 
 # Map static resources from the /public folder to the /assets URL path

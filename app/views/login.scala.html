@@ -1,4 +1,4 @@
-@(clientId: String, state: String)(implicit flash: Flash)
+@(clientId: String, state: String, path: String)(implicit flash: Flash)
 
 @scripts = {
     <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
@@ -31,7 +31,7 @@
                             if (authResult['code']) {
                                 $('#signinButton').hide();
                                 $('.description').text("Processing login...");
-                                window.location = "/authenticate?code=" + authResult['code'];
+                                window.location = "/authenticate?code=" + authResult['code'] + "&path=@path";
                             }
                         }
                 </script>

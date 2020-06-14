@@ -54,24 +54,24 @@ class UnifiController @Inject()(val configuration: Configuration,
     }.to(TreeMap)
   }
 
-  def login = Action { implicit request =>
+  def login(path: String) = Action { implicit request =>
     if (environment.mode == Mode.Prod) {
       val clientId: String = configuration.get[String]("google.clientId")
       val state: String = auth.generateState
-      Ok(views.html.login(clientId, state)(request.flash))
+      Ok(views.html.login(clientId, state, path)(request.flash))
     } else {
-      Redirect(routes.UnifiController.index()).withSession("email" -> "developer@lunatech.com")
+      Redirect(path).withSession("email" -> "developer@lunatech.com")
     }
   }
 
-  def authenticate(code: String) = Action.async {
+  def authenticate(code: String, path: String) = Action.async {
     auth.authenticateToken(code).map {
-      case Left(authenticationResult) => Redirect(routes.UnifiController.index()).withSession("email" -> authenticationResult.email)
-      case Right(message) => Redirect(routes.UnifiController.login()).withNewSession.flashing("error" -> message.toString())
+      case Left(authenticationResult) => Redirect(path).withSession("email" -> authenticationResult.email)
+      case Right(message) => Redirect(routes.UnifiController.login(path)).withNewSession.flashing("error" -> message.toString())
     }
   }
 
   def logout = Action {
-    Redirect(routes.UnifiController.login()).withNewSession.flashing("success" -> "You've been logged out")
+    Redirect(routes.UnifiController.login("/")).withNewSession.flashing("success" -> "You've been logged out")
   }
 }
