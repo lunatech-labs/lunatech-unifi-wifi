@@ -7,6 +7,7 @@ import play.api.{Configuration, Environment, Mode}
 import services.UnifiService
 import services.UnifiService.Device
 
+import scala.collection.immutable.TreeMap
 import scala.concurrent.ExecutionContext
 
 @Singleton
@@ -34,14 +35,14 @@ class UnifiController @Inject()(val configuration: Configuration,
     }
   }
 
-  private def countDevicesPerNetwork(devices: Seq[Device]): Map[String, Map[String, Int]] = {
+  private def countDevicesPerNetwork(devices: Seq[Device]): TreeMap[String, Map[String, Int]] = {
     devices.map { device =>
       val networks = device.vap_table.getOrElse(Nil).groupBy(_.essid)
       val counts = networks.map {
         case (name, nets) => (name, nets.map(_.num_sta).sum)
       }
       (device.name, counts)
-    }.toMap
+    }.to(TreeMap)
   }
 
   def login = Action { implicit request =>
