@@ -1,4 +1,4 @@
-@(countsPerDevice: Map[String, Map[String, Int]], networks: Set[String], site: UnifiSite)(implicit flash: Flash)
+@(devicesPerAp: Map[String, Int], site: UnifiSite)(implicit flash: Flash)
 
 @level(sum: Int) = @{
     if(sum > 5) "alert-danger"
@@ -18,15 +18,15 @@
     <h1>@site.name</h1>
     <h3>Connected WiFi devices</h3>
     <div class="row">
-        @for(device <- countsPerDevice) {
+        @for(ap <- devicesPerAp) {
             <div class="col-md-4 mt-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5>@device._1</h5>
+                        <h5>@ap._1</h5>
                     </div>
                     <div class="card-body">
-                        <div class="alert @level(device._2.values.sum)" >
-                            @device._2.values.sum
+                        <div class="alert @level(ap._2)" >
+                            @ap._2
                             @wifi
                         </div>
                     </div>

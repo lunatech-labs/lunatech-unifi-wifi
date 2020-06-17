@@ -7,7 +7,7 @@ import play.api.{Configuration, Environment, Mode}
 import services.UnifiService
 import services.UnifiService.Device
 
-import scala.collection.immutable.{TreeMap, TreeSet}
+import scala.collection.immutable.TreeMap
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -32,11 +32,8 @@ class UnifiController @Inject()(val configuration: Configuration,
     unifiService.getSite(office).map { site =>
         unifiService.getDevices(site.name).map {
           case Right(devices) =>
-            val countsPerDevice = countDevicesPerNetwork(devices)
-            val networks = countsPerDevice.flatMap {
-              case (_, counts) => counts.keys
-            }.to(TreeSet)
-            Ok(views.html.devices(countsPerDevice, networks, site))
+            val devicesPerAp = countDevicesPerAP(devices)
+            Ok(views.html.devices(devicesPerAp, site))
           case Left(errors) => BadRequest(errors)
         }
     }.getOrElse {
@@ -44,7 +41,7 @@ class UnifiController @Inject()(val configuration: Configuration,
     }
   }
 
-  private def countDevicesPerNetwork(devices: Seq[Device]): TreeMap[String, Map[String, Int]] = {
+  private def countDevicesPerAP(devices: Seq[Device]): TreeMap[String, Int] = {
     devices.map { device =>
       val networks = device.vap_table.getOrElse(Nil).groupBy(_.essid)
       val counts = networks.map {
@@ -52,7 +49,7 @@ class UnifiController @Inject()(val configuration: Configuration,
       }.filterNot {
         case (n, _) => n.contains("Devices") || n.contains("VOIP")
       }
-      (device.name, counts)
+      (device.name, counts.values.sum)
     }.to(TreeMap)
   }
 
