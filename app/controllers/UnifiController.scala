@@ -49,6 +49,8 @@ class UnifiController @Inject()(val configuration: Configuration,
       val networks = device.vap_table.getOrElse(Nil).groupBy(_.essid)
       val counts = networks.map {
         case (name, nets) => (name, nets.map(_.num_sta).sum)
+      }.filterNot {
+        case (n, _) => n.contains("Devices") || n.contains("VOIP")
       }
       (device.name, counts)
     }.to(TreeMap)
