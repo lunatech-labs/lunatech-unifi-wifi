@@ -75,7 +75,7 @@ class UnifiService @Inject()(configuration: Configuration,
   private def deleteRadiusAccount(radiusUser: RadiusUser, site: UnifiSite): Future[Either[Error, String]] = {
     radiusUser._id.map { userId =>
       withAuth(s"$baseUrl/api/s/${site.id}/rest/account/$userId", site) { request =>
-        request.delete.map { response =>
+        request.delete().map { response =>
           response.status match {
             case Status.OK =>
               logger.debug(s"Deleted ${radiusUser.name} at ${site.name}")
@@ -113,7 +113,7 @@ class UnifiService @Inject()(configuration: Configuration,
 
   private def findAccount(email: String, site: UnifiSite): Future[Either[Error, RadiusUser]] = {
     withAuth(s"$baseUrl/api/s/${site.id}/rest/account", site) { request =>
-      request.get.map { response =>
+      request.get().map { response =>
         response.status match {
           case Status.OK =>
             val error = Error("Account not found, please generate a new account")
@@ -126,7 +126,7 @@ class UnifiService @Inject()(configuration: Configuration,
 
   private def getAccounts(site: UnifiSite): Future[Either[Error, Seq[RadiusUser]]] = {
     withAuth(s"$baseUrl/api/s/${site.id}/rest/account", site) { request =>
-      request.get.map { response =>
+      request.get().map { response =>
         response.status match {
           case Status.OK => Right(response.json.as[UnifiResponse[RadiusUser]].data)
           case _ => Left(handleError(response, site))
