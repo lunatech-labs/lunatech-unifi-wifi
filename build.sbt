@@ -6,7 +6,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.13.2"
+scalaVersion := "2.13.7"
 
 resolvers += "Lunatech Artifactory" at "https://artifactory.lunatech.com/artifactory/releases-public"
 
