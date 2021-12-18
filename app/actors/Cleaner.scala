@@ -2,7 +2,6 @@ package actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
 import cats.data.EitherT
-import cats.implicits._
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension
