@@ -5,7 +5,6 @@ import cats.data.EitherT
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension
-import play.api.{Configuration, Environment}
 import services.{PeopleService, UnifiService}
 
 import scala.concurrent.ExecutionContext
@@ -15,9 +14,7 @@ class CleanerScheduler @Inject()(val system: ActorSystem, @Named("cleaner-actor"
   QuartzSchedulerExtension(system).schedule("Clean", cleanerActor, Clean)
 }
 
-class Cleaner @Inject()(configuration: Configuration,
-                        environment: Environment,
-                        unifiService: UnifiService,
+class Cleaner @Inject()(unifiService: UnifiService,
                         peopleService: PeopleService)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
   override def receive: Receive = {

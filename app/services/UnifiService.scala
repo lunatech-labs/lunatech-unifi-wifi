@@ -29,14 +29,14 @@ class UnifiService @Inject()(configuration: Configuration,
           case _ =>
             response.json.as[UnifiResponse[RadiusUser]].meta.msg match {
               case Some("api.err.DuplicateAccountName") => resetRadiusAccount(email, password, site)
-              case _ => Future.successful(Left(handleError(response, site)))
+              case _ => Future.successful(Left(handleError(response)))
             }
         }
       }
     }
   }
 
-  private def handleError(response: WSResponse, unifiSite: UnifiSite): Error = {
+  private def handleError(response: WSResponse): Error = {
     logger.error(response.body)
     Error("Error: an unexpected error occurred, please try again!")
   }
@@ -56,7 +56,7 @@ class UnifiService @Inject()(configuration: Configuration,
         request.put(Json.toJson(radiusUser)).map { response =>
           response.status match {
             case Status.OK => Right(radiusUser.x_password)
-            case _ => Left(handleError(response, site))
+            case _ => Left(handleError(response))
           }
         }
       }
@@ -80,7 +80,7 @@ class UnifiService @Inject()(configuration: Configuration,
             case Status.OK =>
               logger.debug(s"Deleted ${radiusUser.name} at ${site.name}")
               Right(s"${radiusUser.name} deleted")
-            case _ => Left(handleError(response, site))
+            case _ => Left(handleError(response))
           }
         }
       }
@@ -97,7 +97,7 @@ class UnifiService @Inject()(configuration: Configuration,
               process(ws.url(url).withCookies(session).addHttpHeaders("X-Csrf-Token" -> token.value))
             case _ => Future.successful(Left(Error("Missing cookies in auth response")))
           }
-          case _ => Future.successful(Left(handleError(response, site)))
+          case _ => Future.successful(Left(handleError(response)))
         }
       }
   }
@@ -118,7 +118,7 @@ class UnifiService @Inject()(configuration: Configuration,
           case Status.OK =>
             val error = Error("Account not found, please generate a new account")
             response.json.as[UnifiResponse[RadiusUser]].data.find(_.name == email).toRight(error)
-          case _ => Left(handleError(response, site))
+          case _ => Left(handleError(response))
         }
       }
     }
@@ -129,7 +129,7 @@ class UnifiService @Inject()(configuration: Configuration,
       request.get().map { response =>
         response.status match {
           case Status.OK => Right(response.json.as[UnifiResponse[RadiusUser]].data)
-          case _ => Left(handleError(response, site))
+          case _ => Left(handleError(response))
         }
       }
     }
@@ -164,7 +164,7 @@ class UnifiService @Inject()(configuration: Configuration,
       request.get().map { response =>
         response.status match {
           case Status.OK => Right(response.json.as[UnifiResponse[Device]].data.filter(_.`type` == "uap"))
-          case _ => Left(handleError(response, site))
+          case _ => Left(handleError(response))
         }
       }
     }

@@ -2,15 +2,15 @@ package services
 
 import com.google.inject.Inject
 import models.Person
-import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Format
 import play.api.libs.ws.WSClient
+import play.api.{Configuration, Logging}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class PeopleService @Inject()(configuration: Configuration,
-                              ws: WSClient)(implicit ec: ExecutionContext) {
+                              ws: WSClient)(implicit ec: ExecutionContext) extends Logging {
 
   private val baseUrl: String = configuration.get[String]("people.baseUrl")
   private val apiKey: String = configuration.get[String]("people.apiKey")
@@ -23,9 +23,10 @@ class PeopleService @Inject()(configuration: Configuration,
     ws.url(url).addQueryStringParameters("apiKey" -> apiKey).get().map { response =>
       response.status match {
         case Status.OK => Right(response.json.as[A])
-        case _ => Left(response.body)
+        case _ =>
+          logger.error(response.body)
+          Left(response.body)
       }
     }
   }
-
 }

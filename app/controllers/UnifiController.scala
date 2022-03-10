@@ -1,8 +1,9 @@
 package controllers
 
 import com.lunatech.openconnect.Authenticate
+
 import javax.inject._
-import play.api.mvc.{BaseController, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
 import play.api.{Configuration, Environment, Mode}
 import services.UnifiService
 import services.UnifiService.Device
@@ -17,18 +18,18 @@ class UnifiController @Inject()(val configuration: Configuration,
                                 auth: Authenticate,
                                 unifiService: UnifiService)(implicit ec: ExecutionContext) extends BaseController with Secured {
 
-  def index = userAction { implicit request =>
+  def index: Action[AnyContent] = userAction { implicit request =>
     Ok(views.html.index())
   }
 
-  def wifi = userAction.async { implicit request =>
+  def wifi: Action[AnyContent] = userAction.async { implicit request =>
     unifiService.createRadiusAccounts(request.email).map {
       case Right(password) => Ok(views.html.wifi(request.email, password))
       case Left(errors) => Redirect(routes.UnifiController.index()).flashing("error" -> errors)
     }
   }
 
-  def devices(office: String) = userAction.async { implicit request =>
+  def devices(office: String): Action[AnyContent] = userAction.async { implicit request =>
     unifiService.getSite(office).map { site =>
         unifiService.getDevices(site.name).map {
           case Right(devices) =>
@@ -53,7 +54,7 @@ class UnifiController @Inject()(val configuration: Configuration,
     }.to(TreeMap)
   }
 
-  def login(path: String) = Action { implicit request =>
+  def login(path: String): Action[AnyContent] = Action { implicit request =>
     if (environment.mode == Mode.Prod) {
       val clientId: String = configuration.get[String]("google.clientId")
       val state: String = auth.generateState
@@ -63,14 +64,14 @@ class UnifiController @Inject()(val configuration: Configuration,
     }
   }
 
-  def authenticate(code: String, path: String) = Action.async {
+  def authenticate(code: String, path: String): Action[AnyContent] = Action.async {
     auth.authenticateToken(code).map {
       case Left(authenticationResult) => Redirect(path).withSession("email" -> authenticationResult.email)
       case Right(message) => Redirect(routes.UnifiController.login(path)).withNewSession.flashing("error" -> message.toString())
     }
   }
 
-  def logout = Action {
+  def logout: Action[AnyContent] = Action {
     Redirect(routes.UnifiController.login("/")).withNewSession.flashing("success" -> "You've been logged out")
   }
 }
