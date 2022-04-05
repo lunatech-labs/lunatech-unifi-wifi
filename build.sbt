@@ -12,6 +12,7 @@ resolvers += "Lunatech Artifactory" at "https://artifactory.lunatech.com/artifac
 
 libraryDependencies ++= Seq(
   guice, ws,
+  "com.google.inject" % "guice" % "5.1.0",
   "com.enragedginger" %% "akka-quartz-scheduler" % "1.9.2-akka-2.6.x",
   "org.typelevel" %% "cats-core" % "2.7.0",
   "com.lunatech" %% "play-googleopenconnect" % "2.8.0"
