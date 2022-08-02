@@ -8,7 +8,9 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.13.8"
 
-resolvers += "Lunatech Artifactory" at "https://artifactory.lunatech.com/artifactory/releases-public"
+
+githubTokenSource := TokenSource.Environment("GITHUB_TOKEN") || TokenSource.GitConfig("github.token")
+resolvers += Resolver.githubPackages("lunatech-labs")
 
 libraryDependencies ++= Seq(
   guice, ws,
