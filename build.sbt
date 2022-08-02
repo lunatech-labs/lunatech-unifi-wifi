@@ -15,7 +15,7 @@ resolvers += Resolver.githubPackages("lunatech-labs")
 libraryDependencies ++= Seq(
   guice, ws,
   "com.google.inject" % "guice" % "5.1.0",
-  "com.enragedginger" %% "akka-quartz-scheduler" % "1.9.2-akka-2.6.x",
+  "com.enragedginger" %% "akka-quartz-scheduler" % "1.9.3-akka-2.6.x",
   "org.typelevel" %% "cats-core" % "2.8.0",
   "com.lunatech" %% "play-googleopenconnect" % "2.8.0"
 )
