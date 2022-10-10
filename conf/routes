@@ -14,6 +14,7 @@ GET         /logout                  controllers.UnifiController.logout()
 
 # REST endpoints
 POST        /api/authenticate        controllers.RestController.authenticate()
++nocsrf
 POST        /api/wifi                controllers.RestController.wifi()
 
 # Map static resources from the /public folder to the /assets URL path

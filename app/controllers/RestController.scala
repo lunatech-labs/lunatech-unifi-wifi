@@ -1,22 +1,21 @@
 package controllers
 
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
-import com.lunatech.openconnect.{Authenticate, GoogleSecured}
+import com.lunatech.openconnect.Authenticate
 import play.api.Mode.Dev
+import play.api.mvc.{Action, AnyContent, ControllerComponents, InjectedController}
 import play.api.{Configuration, Environment}
-import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
 import services.UnifiService
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RestController @Inject()(val configuration: Configuration,
-                               val controllerComponents: ControllerComponents,
+                               val apiSessionCookieBaker: APISessionCookieBaker,
+                               override val controllerComponents: ControllerComponents,
                                environment: Environment,
                                auth: Authenticate,
-                               unifiService: UnifiService,
-                               apiSessionCookieBaker: APISessionCookieBaker
-                              )(implicit executionContext: ExecutionContext) extends BaseController with GoogleSecured {
+                               unifiService: UnifiService
+                              )(implicit executionContext: ExecutionContext) extends InjectedController with ApiSecured {
 
   def authenticate(): Action[AnyContent] = Action.async { request =>
     if(environment.mode == Dev) {
@@ -36,7 +35,7 @@ class RestController @Inject()(val configuration: Configuration,
     }
   }
 
-  def wifi(): Action[AnyContent] = userAction.async { request =>
+  def wifi(): Action[AnyContent] = apiAction.async { request =>
     unifiService.createRadiusAccounts(request.email).map {
       case Left(errors) => BadRequest(errors)
       case Right(password) => Ok(password)
