@@ -13,6 +13,7 @@ GET         /authenticate            controllers.UnifiController.authenticate(co
 GET         /logout                  controllers.UnifiController.logout()
 
 # REST endpoints
++nocsrf
 POST        /api/authenticate        controllers.RestController.authenticate()
 +nocsrf
 POST        /api/wifi                controllers.RestController.wifi()

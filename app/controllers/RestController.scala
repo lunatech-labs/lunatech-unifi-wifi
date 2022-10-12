@@ -1,7 +1,7 @@
 package controllers
 
 import com.lunatech.openconnect.Authenticate
-import play.api.Mode.Dev
+import play.api.Mode.Prod
 import play.api.mvc.{Action, AnyContent, ControllerComponents, InjectedController}
 import play.api.{Configuration, Environment}
 import services.UnifiService
@@ -18,9 +18,7 @@ class RestController @Inject()(val configuration: Configuration,
                               )(implicit executionContext: ExecutionContext) extends InjectedController with ApiSecured {
 
   def authenticate(): Action[AnyContent] = Action.async { request =>
-    if(environment.mode == Dev) {
-      mockAuth()
-    } else {
+    if (environment.mode == Prod) {
       val body = request.body.asFormUrlEncoded.get
       body("accessToken").headOption match {
         case None => Future(BadRequest("Missing 'accessToken'"))
@@ -32,20 +30,20 @@ class RestController @Inject()(val configuration: Configuration,
             BadRequest(s"Authentication failed, reason: $message").withNewSession
         }
       }
+    } else {
+      val data = Map("email" -> "developer@lunatech.com", "isAdmin" -> "true")
+      Future(Ok(apiSessionCookieBaker.jwtCodec.encode(data)))
     }
   }
 
   def wifi(): Action[AnyContent] = apiAction.async { request =>
-    unifiService.createRadiusAccounts(request.email).map {
-      case Left(errors) => BadRequest(errors)
-      case Right(password) => Ok(password)
+    if (environment.mode == Prod) {
+      unifiService.createRadiusAccounts(request.email).map {
+        case Left(errors) => BadRequest(errors)
+        case Right(password) => Ok(password)
+      }
+    } else {
+      Future(Ok("Mock Password"))
     }
-  }
-
-  private def mockAuth() = {
-    val email = configuration.get[String]("dev.mockAccount.email")
-    val isAdmin = configuration.get[String]("dev.mockAccount.isAdmin")
-    val data = Map("email" -> email, "isAdmin" -> isAdmin)
-    Future(Ok(apiSessionCookieBaker.jwtCodec.encode(data)))
   }
 }
