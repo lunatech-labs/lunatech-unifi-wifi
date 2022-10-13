@@ -1,22 +1,23 @@
 package controllers
 
-import com.lunatech.openconnect.Authenticate
-
-import javax.inject._
-import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
+import com.lunatech.openconnect.{Authenticate, GoogleSecured}
+import play.api.mvc._
 import play.api.{Configuration, Environment, Mode}
 import services.UnifiService
 import services.UnifiService.Device
 
+import javax.inject._
 import scala.collection.immutable.TreeMap
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
 class UnifiController @Inject()(val configuration: Configuration,
                                 val controllerComponents: ControllerComponents,
                                 environment: Environment,
                                 auth: Authenticate,
-                                unifiService: UnifiService)(implicit ec: ExecutionContext) extends BaseController with Secured {
+                                unifiService: UnifiService) extends BaseController with GoogleSecured {
+
+  override def onUnauthorized[A](request: Request[A]): Result = Results.Redirect(routes.UnifiController.login(request.path))
 
   def index: Action[AnyContent] = userAction { implicit request =>
     Ok(views.html.index())
@@ -31,12 +32,12 @@ class UnifiController @Inject()(val configuration: Configuration,
 
   def devices(office: String): Action[AnyContent] = userAction.async { implicit request =>
     unifiService.getSite(office).map { site =>
-        unifiService.getDevices(site.name).map {
-          case Right(devices) =>
-            val devicesPerAp = countDevicesPerAP(devices)
-            Ok(views.html.devices(devicesPerAp, site))
-          case Left(errors) => BadRequest(errors)
-        }
+      unifiService.getDevices(site.name).map {
+        case Right(devices) =>
+          val devicesPerAp = countDevicesPerAP(devices)
+          Ok(views.html.devices(devicesPerAp, site))
+        case Left(errors) => BadRequest(errors)
+      }
     }.getOrElse {
       Future.successful(NotFound("Office not found"))
     }

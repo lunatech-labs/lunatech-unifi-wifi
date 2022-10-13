@@ -1,13 +1,13 @@
 package controllers
 
-import com.lunatech.openconnect.Authenticate
+import com.lunatech.openconnect.{APISessionCookieBaker, Authenticate, GoogleApiSecured}
 import play.api.Mode.Prod
 import play.api.mvc.{Action, AnyContent, ControllerComponents, InjectedController}
 import play.api.{Configuration, Environment}
 import services.UnifiService
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class RestController @Inject()(val configuration: Configuration,
                                val apiSessionCookieBaker: APISessionCookieBaker,
@@ -15,7 +15,7 @@ class RestController @Inject()(val configuration: Configuration,
                                environment: Environment,
                                auth: Authenticate,
                                unifiService: UnifiService
-                              )(implicit executionContext: ExecutionContext) extends InjectedController with ApiSecured {
+                              ) extends InjectedController with GoogleApiSecured {
 
   def authenticate(): Action[AnyContent] = Action.async { request =>
     if (environment.mode == Prod) {
@@ -36,7 +36,7 @@ class RestController @Inject()(val configuration: Configuration,
     }
   }
 
-  def wifi(): Action[AnyContent] = apiAction.async { request =>
+  def wifi(): Action[AnyContent] = userAction.async { request =>
     if (environment.mode == Prod) {
       unifiService.createRadiusAccounts(request.email).map {
         case Left(errors) => BadRequest(errors)
