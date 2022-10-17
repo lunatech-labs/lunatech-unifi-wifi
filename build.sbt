@@ -8,7 +8,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.13.10"
 
-
+githubOwner := "lunatech-labs"
+githubRepository := "lunatech-unifi-wifi"
 githubTokenSource := TokenSource.Environment("GITHUB_TOKEN") || TokenSource.GitConfig("github.token")
 resolvers += Resolver.githubPackages("lunatech-labs")
 
