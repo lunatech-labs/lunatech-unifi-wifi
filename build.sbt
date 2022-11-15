@@ -18,5 +18,5 @@ libraryDependencies ++= Seq(
   "com.google.inject" % "guice" % "5.1.0",
   "com.enragedginger" %% "akka-quartz-scheduler" % "1.9.3-akka-2.6.x",
   "org.typelevel" %% "cats-core" % "2.9.0",
-  "com.lunatech" %% "play-googleopenconnect" % "2.9.1"
+  "com.lunatech" %% "play-googleopenconnect" % "2.9.2"
 )
