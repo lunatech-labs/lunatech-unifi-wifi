@@ -10,7 +10,7 @@ scalaVersion := "2.13.12"
 
 libraryDependencies ++= Seq(
   guice, ws,
-  "io.github.samueleresca" %% "pekko-quartz-scheduler" % "1.0.0-pekko-1.0.x",
+  "io.github.samueleresca" %% "pekko-quartz-scheduler" % "1.0.1-pekko-1.0.x",
   "org.typelevel" %% "cats-core" % "2.10.0",
   "com.lunatech" %% "play-googleopenconnect" % "3.0.0"
 )
