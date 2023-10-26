@@ -1,10 +1,10 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
 import cats.data.EitherT
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension
+import org.apache.pekko.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
+import org.apache.pekko.extension.quartz.QuartzSchedulerExtension
 import services.{PeopleService, UnifiService}
 
 import scala.concurrent.ExecutionContext
