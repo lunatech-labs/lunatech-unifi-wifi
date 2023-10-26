@@ -1,7 +1,7 @@
 package filters
 
-import akka.stream.Materializer
 import com.google.inject.Inject
+import org.apache.pekko.stream.Materializer
 import play.api.Environment
 import play.api.mvc._
 
