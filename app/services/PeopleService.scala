@@ -39,7 +39,6 @@ class PeopleService @Inject()(configuration: Configuration,
     res = wsRes.status match {
         case Status.OK =>
           val jsonResult = Json.parse(wsRes.body)
-          logger.debug(jsonResult.toString())
           Right((jsonResult \ "data" \ "people").get.as[Seq[Person]])
         case _ => logger.error(wsRes.body)
           Left(wsRes.body)
