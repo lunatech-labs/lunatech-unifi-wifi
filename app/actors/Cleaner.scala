@@ -25,7 +25,7 @@ class Cleaner @Inject()(unifiService: UnifiService,
         persons <- EitherT(peopleService.getPersons)
         accounts <- EitherT(unifiService.getRadiusAccounts)
       } yield {
-        accounts.map(_.name).toSet diff persons.map(_.email).toSet
+        accounts.map(_.name).toSet diff persons.map(_.emailAddress).toSet
       }
 
       oldAccounts.value.map {
