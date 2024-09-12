@@ -12,6 +12,7 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class CleanerScheduler @Inject()(val system: ActorSystem, @Named("cleaner-actor") val cleanerActor: ActorRef)(implicit ec: ExecutionContext) {
   QuartzSchedulerExtension(system).schedule("Clean", cleanerActor, Clean)
+  cleanerActor ! Clean
 }
 
 class Cleaner @Inject()(unifiService: UnifiService,
