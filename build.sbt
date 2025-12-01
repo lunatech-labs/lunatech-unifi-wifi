@@ -6,7 +6,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.13.17"
+scalaVersion := "2.13.18"
 
 libraryDependencies ++= Seq(
   guice, ws,
